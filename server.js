@@ -2,9 +2,10 @@
 const express = require('express');
 const inquirer = require('inquirer')
 const fs = require('fs')
+const cTable = require('console.table');
 
 const app = express();
-const PORT = 3001;
+
 
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
