@@ -11,16 +11,6 @@ app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(express.static('./public'));
 
-//const db = mysql.createConnection(
-  //  {
-    //    host: 'localhost',
-      //  user: 'root',
-        //password: '',
-        //database: 'employee_db'
-    //}, 
-    //console.log(`Connected to the employee_db database`)
-//)
-
 //Arrays for the departments and roles which can be updated
 let listOfDepartments = ['Testing1', 'Testing2', 'Testing3']
 let listOfRoles = ['Testing1', 'Testing2', 'Testing3']
