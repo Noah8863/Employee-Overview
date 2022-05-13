@@ -11,18 +11,19 @@ app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(express.static('./public'));
 
+
 //Arrays for the departments and roles which can be updated
 let listOfDepartments = ['Testing1', 'Testing2', 'Testing3']
 let listOfRoles = ['Testing1', 'Testing2', 'Testing3']
 
 //Questions for the user to update and view the database
-const actions = ['View All Departments', 'Add Departments', 'View all Employees', 'Add New Employee', 'Update Employee Role', 'Add Role', 'Quit']
+const listsOfActions = ['View All Departments', 'Add Departments', 'View all Employees', 'Add New Employee', 'Update Employee Role', 'Add Role', 'Quit']
 const question = [
     {
         type: 'list',
         name: 'actions',
         message: 'What would you like to do? (Select with the up and down keys)',
-        choices: actions
+        choices: listsOfActions
     }
 ]
 
@@ -85,12 +86,29 @@ const addEmployee = [
     }
 ]
 
-const init = () => {
-    inquirer
-        .prompt(addEmployee)
-        .then((responses) => {
-            console.log(responses)
-        })
+if (listsOfActions.responses === 'Add Departments') {
+    console.log('hello')
 }
 
+const init = () => {
+    inquirer
+        .prompt(question)
+        .then((responses) => {
+            if (listsOfActions[0]) {
+                console.log('Show lists of departments here')
+            } else if (listsOfActions[1]) {
+                console.log('Add departments options here')
+            } else if (listsOfActions[2]) {
+                console.log('Show Employees table here')
+            } else if (listsOfActions[3]){
+                console.log('Add New Employee option here')
+            } else if (listsOfActions[4]){
+                console.log('Show uodate employee role here')
+            } else if (listsOfActions[5]){
+                console.log('Add role option here')
+            } else {
+                console.log('GoodBye')
+            }
+        })
+}
 init();
