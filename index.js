@@ -94,20 +94,25 @@ const init = () => {
     inquirer
         .prompt(question)
         .then((responses) => {
-            if (listsOfActions[0]) {
+            if (responses.actions === 'View All Departments') {
                 console.log('Show lists of departments here')
-            } else if (listsOfActions[1]) {
-                console.log('Add departments options here')
-            } else if (listsOfActions[2]) {
-                console.log('Show Employees table here')
-            } else if (listsOfActions[3]){
-                console.log('Add New Employee option here')
-            } else if (listsOfActions[4]){
-                console.log('Show uodate employee role here')
-            } else if (listsOfActions[5]){
-                console.log('Add role option here')
-            } else {
-                console.log('GoodBye')
+            }
+            else if (responses.actions === 'Add Departments') {
+                console.log('Add Departments Here')
+            }
+            else if (responses.actions === 'View all Employees') {
+                console.log('View all employees here')
+            }
+            else if (responses.actions === 'Add New Employee') {
+                console.log('Add new employee')
+            }
+            else if (responses.actions === 'Update Employee Role') {
+                console.log('Update Employee Role')
+            }
+            else if (responses.actions === 'Add Role') {
+                console.log('Add Role Option Here')
+            } else{
+                console.log('I Quit!')
             }
         })
 }
