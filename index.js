@@ -1,17 +1,25 @@
 // Packages that are used in the program
 const inquirer = require('inquirer');
 const cTable = require('console.table');
-//const mysql = require('mysql2');
 const express = require('express');
-// const db = mysql.createConnection(
-//     {
-//         host: 'localhost',
-//         user: 'root',
-//         password: '',
-//         database: 'employee_db'
-//     },
-//     console.log(`Connected to the employee_db database`)
-// )
+const mysql = require('mysql2');
+
+const db = mysql.createConnection(
+     {
+         host: 'localhost',
+         user: 'root',
+         password: '',
+         database: 'employee_db'
+     },
+     console.log(`Connected to the employee_db database`)
+)
+
+db.connect((err) => {
+    if (err) {
+        throw err;
+    }
+    console.log(`Connected to employee_db`)
+})
 
 const app = express();
 
@@ -96,12 +104,21 @@ const addEmployee = [
     }
 ]
 
+const deleteAction = [
+    {
+        type: 'list',
+        name: 'deleteAction',
+        message: 'Who woudl you like to fire?',
+        choices: employeeArray
+    }
+]
+
 const init = () => {
     inquirer
         .prompt(question)
         .then((responses) => {
             if (responses.actions === 'View All Departments') {
-                console.log(departmentArray)
+                console.table(departmentArray)
             }
             else if (responses.actions === 'Add Departments') {
                 inquirer
@@ -113,7 +130,7 @@ const init = () => {
                     })
             }
             else if (responses.actions === 'View all Employees') {
-                console.log(employeeArray)
+                console.table(employeeArray)
             }
             else if (responses.actions === 'Add New Employee') {
                 inquirer
@@ -121,7 +138,7 @@ const init = () => {
                     .then((newEmployeeResponse) => {
                         let newEmployee = newEmployeeResponse
                         employeeArray.push(newEmployee)
-                        console.log(employeeArray)
+                        console.table(employeeArray)
                     })
             }
             else if (responses.actions === 'Update Employee Role') {
@@ -133,10 +150,14 @@ const init = () => {
                     .then((newRoleResponse) => {
                         let newRole = newRoleResponse
                         rolesArray.push(newRole)
-                        console.log(rolesArray)
+                        console.table(rolesArray)
                     })
             } else if (responses.actions === 'Delete Employee') {
-                console.log("You're Fired! .... or Deleted in this case")
+                inquirer
+                    .prompt(deleteAction)
+                    .then((deleteResponse) => {
+                        console.log(`${deleteResponse} has been fired!`)
+                    })
             } else {
                 console.log('Employee Database Has Been Updated!')
             }
