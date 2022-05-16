@@ -1,8 +1,17 @@
 // Packages that are used in the program
-const express = require('express');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
 //const mysql = require('mysql2');
+const express = require('express');
+// const db = mysql.createConnection(
+//     {
+//         host: 'localhost',
+//         user: 'root',
+//         password: '',
+//         database: 'employee_db'
+//     },
+//     console.log(`Connected to the employee_db database`)
+// )
 
 const app = express();
 
@@ -13,11 +22,12 @@ app.use(express.static('./public'));
 
 
 //Arrays for the departments and roles which can be updated
-let listOfDepartments = ['Testing1', 'Testing2', 'Testing3']
-let listOfRoles = ['Testing1', 'Testing2', 'Testing3']
+let departmentArray = ['Sales', 'Marketing', 'Customer Service', 'Human Resources']
+let employeeArray = ['Billy Bob', 'Billy Bob Jr.', 'Bill Bob Sr.', 'Bonqueequee']
+let rolesArray = ['Sales Representative', 'Sales Specialists', 'Inventory', 'Training and Development']
 
 //Questions for the user to update and view the database
-const listsOfActions = ['View All Departments', 'Add Departments', 'View all Employees', 'Add New Employee', 'Update Employee Role', 'Add Role', 'Quit']
+const listsOfActions = ['View All Departments', 'Add Departments', 'View all Employees', 'Add New Employee', 'Update Employee Role', 'Add Role', 'Delete Employee', 'Quit']
 const question = [
     {
         type: 'list',
@@ -54,7 +64,7 @@ const addRole = [
         type: 'list',
         name: 'roleDepartment',
         message: 'Which Department would you like to add this role to?',
-        choices: listOfDepartments
+        choices: departmentArray
     }
 ]
 
@@ -75,7 +85,7 @@ const addEmployee = [
         type: 'list',
         name: 'employeeTitle',
         message: 'What is the Employees title?',
-        choices: listOfRoles
+        choices: rolesArray
     },
     {
         // Salary will be automatically updated based on the role
@@ -86,33 +96,49 @@ const addEmployee = [
     }
 ]
 
-if (listsOfActions.responses === 'Add Departments') {
-    console.log('hello')
-}
-
 const init = () => {
     inquirer
         .prompt(question)
         .then((responses) => {
             if (responses.actions === 'View All Departments') {
-                console.log('Show lists of departments here')
+                console.log(departmentArray)
             }
             else if (responses.actions === 'Add Departments') {
-                console.log('Add Departments Here')
+                inquirer
+                    .prompt(addDepartment)
+                    .then((departmentResponse) => {
+                        let newDepartment = departmentResponse
+                        departmentArray.push(newDepartment)
+                        console.log(departmentArray)
+                    })
             }
             else if (responses.actions === 'View all Employees') {
-                console.log('View all employees here')
+                console.log(employeeArray)
             }
             else if (responses.actions === 'Add New Employee') {
-                console.log('Add new employee')
+                inquirer
+                    .prompt(addEmployee)
+                    .then((newEmployeeResponse) => {
+                        let newEmployee = newEmployeeResponse
+                        employeeArray.push(newEmployee)
+                        console.log(employeeArray)
+                    })
             }
             else if (responses.actions === 'Update Employee Role') {
                 console.log('Update Employee Role')
             }
             else if (responses.actions === 'Add Role') {
-                console.log('Add Role Option Here')
-            } else{
-                console.log('I Quit!')
+                inquirer
+                    .prompt(addRole)
+                    .then((newRoleResponse) => {
+                        let newRole = newRoleResponse
+                        rolesArray.push(newRole)
+                        console.log(rolesArray)
+                    })
+            } else if (responses.actions === 'Delete Employee') {
+                console.log("You're Fired! .... or Deleted in this case")
+            } else {
+                console.log('Employee Database Has Been Updated!')
             }
         })
 }
