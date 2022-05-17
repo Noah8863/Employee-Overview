@@ -2,14 +2,15 @@
 const inquirer = require('inquirer');
 const cTable = require('console.table');
 const mysql = require('mysql2');
+const util = require('util');
 
 const db = mysql.createConnection(
      {
-         host: 'localhost',
+         host: '127.0.0.1',
          user: 'root',
          password: '',
          database: 'employee_db'
-     },
+     }
 )
 
 db.connect((err) => {
@@ -19,13 +20,13 @@ db.connect((err) => {
     console.log(`Connected to employee_db`)
 })
 
-//Arrays for the departments and roles which can be updated
-const departmentArray = ['Sales', 'Marketing', 'Customer Service', 'Human Resources']
-let employeeArray = ['Billy Bob', 'Billy Bob Jr.', 'Bill Bob Sr.', 'Bonqueequee']
-let rolesArray = ['Sales Representative', 'Sales Specialists', 'Inventory', 'Training and Development']
+const departmentArray = []
+const employeeArray = []
+
+const asyncQuery = util.promisify(db.query).bind(db)
 
 //Questions for the user to update and view the database
-const listsOfActions = ['View All Departments', 'Add Departments', 'View all Employees', 'Add New Employee', 'Update Employee Role', 'Add Role', 'Delete Employee', 'Quit']
+const listsOfActions = ['View All Departments', 'Add Departments', 'View all Employees', 'Add New Employee', 'Update Employee Role', 'Add Role', 'View All Roles', 'Fire Employee', 'Quit']
 const question = [
     {
         type: 'list',
@@ -44,7 +45,6 @@ const addDepartment = [
         message: 'What would you like to call the new department?'
     }
 ]
-
 
 //Questions for adding roles
 const addRole = [
@@ -83,7 +83,7 @@ const addEmployee = [
         type: 'list',
         name: 'employeeTitle',
         message: 'What is the Employees title?',
-        choices: rolesArray
+        choices: findroles()
     },
     {
         // Salary will be automatically updated based on the role
@@ -108,19 +108,19 @@ const init = () => {
         .prompt(question)
         .then((responses) => {
             if (responses.actions === 'View All Departments') {
-                console.table(departmentArray)
+                ViewDept()
             }
             else if (responses.actions === 'Add Departments') {
                 inquirer
                     .prompt(addDepartment)
-                    .then((departmentResponse) => {
+                    .then((responses) => {
                         let newDepartment = departmentResponse
                         departmentArray.push(newDepartment)
                         console.log(departmentArray)
                     })
             }
             else if (responses.actions === 'View all Employees') {
-                console.table(employeeArray)
+                ViewEmployee()
             }
             else if (responses.actions === 'Add New Employee') {
                 inquirer
@@ -134,15 +134,18 @@ const init = () => {
             else if (responses.actions === 'Update Employee Role') {
                 console.log('Update Employee Role')
             }
+            else if (responses.actions === 'View All Roles') {
+                ViewRoles()
+            }
             else if (responses.actions === 'Add Role') {
                 inquirer
                     .prompt(addRole)
                     .then((newRoleResponse) => {
                         let newRole = newRoleResponse
                         rolesArray.push(newRole)
-                        console.table(rolesArray)
+                        cTable(findroles())
                     })
-            } else if (responses.actions === 'Delete Employee') {
+            } else if (responses.actions === 'Fire Employee') {
                 inquirer
                     .prompt(deleteAction)
                     .then((deleteResponse) => {
@@ -150,7 +153,35 @@ const init = () => {
                     })
             } else {
                 console.log('Goodbye')
+                db.end()
             }
         })
 }
 init();
+
+async function ViewDept(){
+    const allDepts = await asyncQuery(`SELECT * FROM employee_db.departments;`)
+    //const deptArray = allDepts.map((dept) => dept.departmentName)
+    console.table(allDepts)
+    init();
+}
+
+async function ViewEmployee(){
+    const allEmp = await asyncQuery(`SELECT * FROM employee_db.employee;`)
+    console.table(allEmp)
+    init();
+}
+
+async function findroles() {
+    const roles = await asyncQuery(`SELECT employeeTitle FROM employee_db.roles;`)
+    const rolesArray = roles.map((role) => role.employeeTitle)
+    console.table(rolesArray)
+    init();
+}
+
+async function ViewRoles() {
+    const roles = await asyncQuery(`SELECT * FROM employee_db.roles;`)
+    //const rolesArray = roles.map((role) => role.employeeTitle)
+    console.table(roles)
+    return roles
+}
