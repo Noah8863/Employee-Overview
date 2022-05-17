@@ -1,7 +1,6 @@
 // Packages that are used in the program
 const inquirer = require('inquirer');
 const cTable = require('console.table');
-const express = require('express');
 const mysql = require('mysql2');
 
 const db = mysql.createConnection(
@@ -11,26 +10,17 @@ const db = mysql.createConnection(
          password: '',
          database: 'employee_db'
      },
-     console.log(`Connected to the employee_db database`)
 )
 
 db.connect((err) => {
     if (err) {
-        throw err;
+        console.log(`Error connecting to employee_db`)
     }
     console.log(`Connected to employee_db`)
 })
 
-const app = express();
-
-//Express Middleware
-app.use(express.json());
-app.use(express.urlencoded({extended: false}));
-app.use(express.static('./public'));
-
-
 //Arrays for the departments and roles which can be updated
-let departmentArray = ['Sales', 'Marketing', 'Customer Service', 'Human Resources']
+const departmentArray = ['Sales', 'Marketing', 'Customer Service', 'Human Resources']
 let employeeArray = ['Billy Bob', 'Billy Bob Jr.', 'Bill Bob Sr.', 'Bonqueequee']
 let rolesArray = ['Sales Representative', 'Sales Specialists', 'Inventory', 'Training and Development']
 
@@ -50,7 +40,7 @@ const question = [
 const addDepartment = [
     {
         type: 'input',
-        name: 'addDepartment',
+        name: 'departmentName',
         message: 'What would you like to call the new department?'
     }
 ]
@@ -108,7 +98,7 @@ const deleteAction = [
     {
         type: 'list',
         name: 'deleteAction',
-        message: 'Who woudl you like to fire?',
+        message: 'Who would you like to fire?',
         choices: employeeArray
     }
 ]
@@ -159,7 +149,7 @@ const init = () => {
                         console.log(`${deleteResponse} has been fired!`)
                     })
             } else {
-                console.log('Employee Database Has Been Updated!')
+                console.log('Goodbye')
             }
         })
 }
