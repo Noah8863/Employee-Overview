@@ -13,12 +13,7 @@ const db = mysql.createConnection(
      }
 )
 
-db.connect((err) => {
-    if (err) {
-        console.log(`Error connecting to employee_db`)
-    }
-    console.log(`Connected to employee_db`)
-})
+const allDepts = db.query(`SELECT * FROM employee_db.departments;`)
 
 const departmentArray = []
 const employeeArray = []
@@ -31,12 +26,10 @@ const question = [
     {
         type: 'list',
         name: 'actions',
-        message: 'What would you like to do? (Select with the up and down keys)',
+        message: 'What would you like to do?',
         choices: listsOfActions
     }
 ]
-
-
 //Questions for adding Departments
 const addDepartment = [
     {
@@ -83,7 +76,7 @@ const addEmployee = [
         type: 'list',
         name: 'employeeTitle',
         message: 'What is the Employees title?',
-        choices: findroles()
+        choices: allDepts
     },
     {
         // Salary will be automatically updated based on the role
@@ -91,15 +84,14 @@ const addEmployee = [
         type: 'input',
         name: 'employeeSalary',
         message: 'What is the Employees salary?'
-    }
+    },
 ]
 
 const deleteAction = [
     {
-        type: 'list',
+        type: 'input',
         name: 'deleteAction',
-        message: 'Who would you like to fire?',
-        choices: employeeArray
+        message: 'Who would you like to fire?'
     }
 ]
 
@@ -114,10 +106,12 @@ const init = () => {
                 inquirer
                     .prompt(addDepartment)
                     .then((responses) => {
-                        let newDepartment = departmentResponse
-                        departmentArray.push(newDepartment)
-                        console.log(departmentArray)
-                    })
+                        let newDepartment = responses.departmentName;
+                        db.query(
+                            `INSERT INTO departments (departmentName) VALUES (?);`, [ newDepartment ]
+                        );
+                        init();
+                     })
             }
             else if (responses.actions === 'View all Employees') {
                 ViewEmployee()
@@ -126,9 +120,14 @@ const init = () => {
                 inquirer
                     .prompt(addEmployee)
                     .then((newEmployeeResponse) => {
-                        let newEmployee = newEmployeeResponse
-                        employeeArray.push(newEmployee)
-                        console.table(employeeArray)
+                        let employeeFirstName = newEmployeeResponse.firstName
+                        let employeeLastName = newEmployeeResponse.lastName
+                        let employeeTitle = newEmployeeResponse.employeeTitle
+                        //let employeeSalary = newEmployeeResponse.employeeSalary
+                        db.query(
+                            `INSERT INTO employees (firstName, lastName, title) VALUES (?);`, [ employeeFirstName, employeeLastName, employeeTitle]
+                        );
+                        init();
                     })
             }
             else if (responses.actions === 'Update Employee Role') {
@@ -149,39 +148,36 @@ const init = () => {
                 inquirer
                     .prompt(deleteAction)
                     .then((deleteResponse) => {
-                        console.log(`${deleteResponse} has been fired!`)
+                        // const Emp = deleteResponse.deleteAction
+                        // const firedEmp = await asyncQuery(`DELETE FROM employee_db.employee WHERE ${Emp.value} === ${deleteResponse.deleteAction}`)
+                        // console.log(Emp)
                     })
             } else {
                 console.log('Goodbye')
-                db.end()
             }
         })
 }
 init();
 
-async function ViewDept(){
-    const allDepts = await asyncQuery(`SELECT * FROM employee_db.departments;`)
-    //const deptArray = allDepts.map((dept) => dept.departmentName)
-    console.table(allDepts)
-    init();
-}
-
-async function ViewEmployee(){
-    const allEmp = await asyncQuery(`SELECT * FROM employee_db.employee;`)
-    console.table(allEmp)
-    init();
-}
-
 async function findroles() {
     const roles = await asyncQuery(`SELECT employeeTitle FROM employee_db.roles;`)
     const rolesArray = roles.map((role) => role.employeeTitle)
-    console.table(rolesArray)
-    init();
 }
 
+//All the functions for Viewing each database
+async function ViewDept(){
+    const allDepts = await asyncQuery(`SELECT * FROM employee_db.departments;`)
+    console.table( '\n', allDepts)
+    init();
+}
+async function ViewEmployee(){
+    const allEmp = await asyncQuery(`SELECT * FROM employee_db.employee;`)
+    console.table('\n',allEmp)
+    init();
+}
 async function ViewRoles() {
     const roles = await asyncQuery(`SELECT * FROM employee_db.roles;`)
     //const rolesArray = roles.map((role) => role.employeeTitle)
-    console.table(roles)
-    return roles
+    console.table('\n',roles)
+    init();
 }
