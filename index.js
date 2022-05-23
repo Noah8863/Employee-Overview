@@ -12,13 +12,8 @@ const db = mysql.createConnection(
          database: 'employee_db'
      }
 )
-
-const allDepts = db.query(`SELECT * FROM employee_db.departments;`)
-
-const departmentArray = []
-const employeeArray = []
-
 const asyncQuery = util.promisify(db.query).bind(db)
+departmentArray = []
 
 //Questions for the user to update and view the database
 const listsOfActions = ['View All Departments', 'Add Departments', 'View all Employees', 'Add New Employee', 'Update Employee Role', 'Add Role', 'View All Roles', 'Fire Employee', 'Quit']
@@ -58,35 +53,6 @@ const addRole = [
         choices: departmentArray
     }
 ]
-
-
-//Questions for adding Employee
-const addEmployee = [
-    {
-        type: 'input',
-        name: 'firstName',
-        message: 'What is the Employees first name?',
-    },
-    {
-        type: 'input',
-        name: 'lastName',
-        message: 'What is the Employees last name?'
-    },
-    {
-        type: 'list',
-        name: 'employeeTitle',
-        message: 'What is the Employees title?',
-        choices: allDepts
-    },
-    {
-        // Salary will be automatically updated based on the role
-        //Using this as a test question
-        type: 'input',
-        name: 'employeeSalary',
-        message: 'What is the Employees salary?'
-    },
-]
-
 const deleteAction = [
     {
         type: 'input',
@@ -111,24 +77,54 @@ const init = () => {
                             `INSERT INTO departments (departmentName) VALUES (?);`, [ newDepartment ]
                         );
                         init();
-                     })
+                     })            
             }
             else if (responses.actions === 'View all Employees') {
                 ViewEmployee()
             }
             else if (responses.actions === 'Add New Employee') {
-                inquirer
-                    .prompt(addEmployee)
-                    .then((newEmployeeResponse) => {
-                        let employeeFirstName = newEmployeeResponse.firstName
-                        let employeeLastName = newEmployeeResponse.lastName
-                        let employeeTitle = newEmployeeResponse.employeeTitle
-                        //let employeeSalary = newEmployeeResponse.employeeSalary
-                        db.query(
-                            `INSERT INTO employees (firstName, lastName, title) VALUES (?);`, [ employeeFirstName, employeeLastName, employeeTitle]
-                        );
-                        init();
-                    })
+                departmentArray = []
+                db.connect(function(err) {
+                    if (err) throw err;
+                    db.query("SELECT * FROM employee_db.departments", function (err, result, fields) {
+                      if (err) throw err;
+                        for (var {departmentName: departments} of result) {
+                          departmentArray.push(departments)
+                        }
+                      inquirer
+                        .prompt (
+                            [
+                                {
+                                    type: 'input',
+                                    name: 'firstName',
+                                    message: 'Enter the first name of the employee'
+                                },
+                                {
+                                    type: 'input',
+                                    name: 'lastName',
+                                    message: 'Enter in the last name of the employee'
+                                },
+                                {
+                                    type: 'list',
+                                    name: 'employeeDepartment',
+                                    message: 'What department would you like to put this employee into?',
+                                    choices: departmentArray
+                                },
+                                
+                            ]
+                        )
+                        .then((response) => {
+                            let firstName = response.firstName
+                            let lastName = response.lastName
+                            let department = response.employeeDepartment
+                            console.log (firstName, lastName, department)
+                            // db.query(
+                            //     `INSERT INTO employee(firstName, lastName, department) VALUES (?);`, [firstName, lastName, department]
+                            // );
+                            init();
+                        })
+                    });
+                });
             }
             else if (responses.actions === 'Update Employee Role') {
                 console.log('Update Employee Role')
@@ -137,12 +133,38 @@ const init = () => {
                 ViewRoles()
             }
             else if (responses.actions === 'Add Role') {
+                
                 inquirer
-                    .prompt(addRole)
+                    .prompt(
+                        [
+                            {
+                                type: 'input',
+                                name: 'roleName',
+                                message: 'What role would you like to add?'
+                            },
+                            {
+                                type: 'input',
+                                name: 'roleSalary',
+                                message: `How much salary does this role get?`
+                            },
+                            {
+                                type: 'list',
+                                name: 'roleDepartment',
+                                message: 'Which Department would you like to add this role to?',
+                                choices: departmentArray
+                                //This is firing before anything else once the inquirer is invoked
+                            }
+                        ]
+                    )
                     .then((newRoleResponse) => {
-                        let newRole = newRoleResponse
-                        rolesArray.push(newRole)
-                        cTable(findroles())
+                        let newRole = newRoleResponse.roleName
+                        let newSalary = newRoleResponse.roleSalary
+                        let roleDepartment = newRoleResponse.roleDepartment
+                        db.query(
+                            `INSERT INTO roles (employeeTitle, salary, department_ID) VALUES (?);`, [newRole, newSalary, roleDepartment]
+                        )
+                        
+                        init();
                     })
             } else if (responses.actions === 'Fire Employee') {
                 inquirer
