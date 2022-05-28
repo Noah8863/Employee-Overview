@@ -5,12 +5,12 @@ const mysql = require('mysql2');
 const util = require('util');
 
 const db = mysql.createConnection(
-     {
-         host: '127.0.0.1',
-         user: 'root',
-         password: '',
-         database: 'employee_db'
-     }
+    {
+        host: '127.0.0.1',
+        user: 'root',
+        password: '',
+        database: 'employee_db'
+    }
 )
 const asyncQuery = util.promisify(db.query).bind(db)
 departmentArray = []
@@ -74,66 +74,76 @@ const init = () => {
                     .then((responses) => {
                         let newDepartment = responses.departmentName;
                         db.query(
-                            `INSERT INTO departments (departmentName) VALUES (?);`, [ newDepartment ]
+                            `INSERT INTO departments (departmentName) VALUES (?);`, [newDepartment]
                         );
                         init();
-                     })            
+                    })
             }
             else if (responses.actions === 'View all Employees') {
                 ViewEmployee()
             }
             else if (responses.actions === 'Add New Employee') {
-                departmentArray = []
-                db.connect(function(err) {
-                    if (err) throw err;
-                    db.query("SELECT * FROM employee_db.departments", function (err, result, fields) {
-                      if (err) throw err;
-                        for (var {departmentName: departments} of result) {
-                          departmentArray.push(departments)
-                        }
-                      inquirer
-                        .prompt (
-                            [
-                                {
-                                    type: 'input',
-                                    name: 'firstName',
-                                    message: 'Enter the first name of the employee'
-                                },
-                                {
-                                    type: 'input',
-                                    name: 'lastName',
-                                    message: 'Enter in the last name of the employee'
-                                },
-                                {
-                                    type: 'list',
-                                    name: 'employeeDepartment',
-                                    message: 'What department would you like to put this employee into?',
-                                    choices: departmentArray
-                                },
-                                
-                            ]
-                        )
-                        .then((response) => {
-                            let firstName = response.firstName
-                            let lastName = response.lastName
-                            let department = response.employeeDepartment
-                            console.log (firstName, lastName, department)
-                            // db.query(
-                            //     `INSERT INTO employee(firstName, lastName, department) VALUES (?);`, [firstName, lastName, department]
-                            // );
-                            init();
-                        })
-                    });
-                });
+                inquirer
+                    .prompt(
+                        [
+                            {
+                                type: 'input',
+                                name: 'firstName',
+                                message: 'Enter the first name of the employee'
+                            },
+                            {
+                                type: 'input',
+                                name: 'lastName',
+                                message: 'Enter in the last name of the employee'
+                            },
+                            {
+                                type: 'input',
+                                name: 'roleId',
+                                message: 'What role ID do you want this employee to be?'
+                            },
+                        ]
+                    )
+                    .then((response) => {
+                        const firstName = response.firstName
+                        const lastName = response.lastName
+                        const roleId = response.roleId
+                        db.query(
+                            `INSERT INTO employee (firstName, lastName, role_ID) VALUES (?, ?, ?);`, [firstName, lastName, roleId]
+                        );
+                        console.log('\n Added ' + firstName, lastName + ' to the database! \n')
+                        init();
+                    })
             }
             else if (responses.actions === 'Update Employee Role') {
-                console.log('Update Employee Role')
+                inquirer
+                    .prompt(
+                        [
+                            {
+                                type: 'input',
+                                name: 'employeeName',
+                                message: 'Whats the last name of the employee you want to update?'
+                            },
+                            {
+                                type: 'input',
+                                name: 'roleID',
+                                message: 'What is the new role ID ',
+                            }
+
+                        ]
+                    )
+                    .then((newRoleResponse) => {
+                        let employeeName = newRoleResponse.employeeName
+                        let roleID = newRoleResponse.roleID
+                        db.query(
+                            `UPDATE employee SET role_ID = ? WHERE lastName = ?;`, [roleID, employeeName]
+                        )
+                        init();
+                    })
             }
             else if (responses.actions === 'View All Roles') {
                 ViewRoles()
             }
             else if (responses.actions === 'Add Role') {
-                
                 inquirer
                     .prompt(
                         [
@@ -148,12 +158,11 @@ const init = () => {
                                 message: `How much salary does this role get?`
                             },
                             {
-                                type: 'list',
+                                type: 'input',
                                 name: 'roleDepartment',
-                                message: 'Which Department would you like to add this role to?',
-                                choices: departmentArray
-                                //This is firing before anything else once the inquirer is invoked
+                                message: 'Which Department ID would you like to add this to?',
                             }
+
                         ]
                     )
                     .then((newRoleResponse) => {
@@ -161,18 +170,27 @@ const init = () => {
                         let newSalary = newRoleResponse.roleSalary
                         let roleDepartment = newRoleResponse.roleDepartment
                         db.query(
-                            `INSERT INTO roles (employeeTitle, salary, department_ID) VALUES (?);`, [newRole, newSalary, roleDepartment]
+                            `INSERT INTO roles (employeeTitle, salary, department_ID) VALUES (?, ?, ?);`, [newRole, newSalary, roleDepartment]
                         )
-                        
                         init();
                     })
             } else if (responses.actions === 'Fire Employee') {
                 inquirer
-                    .prompt(deleteAction)
-                    .then((deleteResponse) => {
-                        // const Emp = deleteResponse.deleteAction
-                        // const firedEmp = await asyncQuery(`DELETE FROM employee_db.employee WHERE ${Emp.value} === ${deleteResponse.deleteAction}`)
-                        // console.log(Emp)
+                    .prompt(
+                        [
+                            {
+                                type: 'input',
+                                name: 'name',
+                                message: 'What is the last name of the employee you want to fire?'
+                            }
+                        ]
+                    )
+                    .then((newRoleResponse) => {
+                        let firedEmployee = newRoleResponse.name
+                        db.query(
+                            `DELETE FROM employee WHERE lastName = ?;`, [firedEmployee]
+                        )
+                        init();
                     })
             } else {
                 console.log('Goodbye')
@@ -181,25 +199,20 @@ const init = () => {
 }
 init();
 
-async function findroles() {
-    const roles = await asyncQuery(`SELECT employeeTitle FROM employee_db.roles;`)
-    const rolesArray = roles.map((role) => role.employeeTitle)
-}
-
 //All the functions for Viewing each database
-async function ViewDept(){
+async function ViewDept() {
     const allDepts = await asyncQuery(`SELECT * FROM employee_db.departments;`)
-    console.table( '\n', allDepts)
+    console.table('\n', allDepts)
     init();
 }
-async function ViewEmployee(){
+async function ViewEmployee() {
     const allEmp = await asyncQuery(`SELECT * FROM employee_db.employee;`)
-    console.table('\n',allEmp)
+    console.table('\n', allEmp)
     init();
 }
 async function ViewRoles() {
     const roles = await asyncQuery(`SELECT * FROM employee_db.roles;`)
     //const rolesArray = roles.map((role) => role.employeeTitle)
-    console.table('\n',roles)
+    console.table('\n', roles)
     init();
 }
