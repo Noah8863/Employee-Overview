@@ -16,7 +16,7 @@ const asyncQuery = util.promisify(db.query).bind(db)
 departmentArray = []
 
 //Questions for the user to update and view the database
-const listsOfActions = ['View All Departments', 'Add Departments', 'View all Employees', 'Add New Employee', 'Update Employee Role', 'Add Role', 'View All Roles', 'Fire Employee', 'Quit']
+const listsOfActions = ['View All Departments', 'Add Departments', 'View all Employees', 'Add New Employee', 'Update Employee Role', 'Add Role', 'View All Roles', 'Fire Employee','Remove Department', 'Quit']
 const question = [
     {
         type: 'list',
@@ -31,33 +31,6 @@ const addDepartment = [
         type: 'input',
         name: 'departmentName',
         message: 'What would you like to call the new department?'
-    }
-]
-
-//Questions for adding roles
-const addRole = [
-    {
-        type: 'input',
-        name: 'roleName',
-        message: 'What role would you like to add?'
-    },
-    {
-        type: 'input',
-        name: 'roleSalary',
-        message: `How much salary does this role get?`
-    },
-    {
-        type: 'list',
-        name: 'roleDepartment',
-        message: 'Which Department would you like to add this role to?',
-        choices: departmentArray
-    }
-]
-const deleteAction = [
-    {
-        type: 'input',
-        name: 'deleteAction',
-        message: 'Who would you like to fire?'
     }
 ]
 
@@ -189,6 +162,24 @@ const init = () => {
                         let firedEmployee = newRoleResponse.name
                         db.query(
                             `DELETE FROM employee WHERE lastName = ?;`, [firedEmployee]
+                        )
+                        init();
+                    })
+            } else if (responses.actions === 'Remove Department') {
+                inquirer
+                    .prompt(
+                        [
+                            {
+                                type: 'input',
+                                name: 'removedDepartment',
+                                message: 'Which department would you like to remove?'
+                            }
+                        ]
+                    )
+                    .then((response) => {
+                        let removedDepartment = response.removedDepartment
+                        db.query(
+                            `DELETE FROM departments WHERE departmentName = ?;`, [removedDepartment]
                         )
                         init();
                     })
