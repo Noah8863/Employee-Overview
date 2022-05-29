@@ -16,7 +16,7 @@ const asyncQuery = util.promisify(db.query).bind(db)
 departmentArray = []
 
 //Questions for the user to update and view the database
-const listsOfActions = ['View All Departments', 'Add Departments', 'View all Employees', 'Add New Employee', 'Update Employee Role', 'Add Role', 'View All Roles', 'Fire Employee','Remove Department', 'Quit']
+const listsOfActions = ['View All Departments', 'Add Departments', 'View all Employees', 'Add New Employee', 'Update Employee Role', 'Add Role', 'View All Roles', 'Fire Employee', 'Remove Department', 'Remove Role', 'Quit']
 const question = [
     {
         type: 'list',
@@ -180,6 +180,24 @@ const init = () => {
                         let removedDepartment = response.removedDepartment
                         db.query(
                             `DELETE FROM departments WHERE departmentName = ?;`, [removedDepartment]
+                        )
+                        init();
+                    })
+            } else if (responses.actions === 'Remove Role') {
+                inquirer
+                    .prompt(
+                        [
+                            {
+                                type: 'input',
+                                name: 'removedRole',
+                                message: 'Which Role would you like to remove?'
+                            }
+                        ]
+                    )
+                    .then((response) => {
+                        let removedRole = response.removedRole
+                        db.query(
+                            `DELETE FROM roles WHERE employeeTitle = ?;`, [removedRole]
                         )
                         init();
                     })
