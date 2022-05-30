@@ -16,7 +16,7 @@ const asyncQuery = util.promisify(db.query).bind(db)
 departmentArray = []
 
 //Questions for the user to update and view the database
-const listsOfActions = ['View All Departments', 'Add Departments', 'View all Employees', 'Add New Employee', 'Update Employee Role', 'Add Role', 'View All Roles', 'Fire Employee', 'Remove Department', 'Remove Role', 'Quit']
+const listsOfActions = ['View All Departments', 'Add Departments', 'View all Employees', 'Add New Employee', 'Update Employee Role', 'Add Role', 'View All Roles', 'Fire Employee', 'Remove Department', 'Remove Role', 'See Budget for all Departments', 'Quit']
 const question = [
     {
         type: 'list',
@@ -201,6 +201,8 @@ const init = () => {
                         )
                         init();
                     })
+            } else if (responses.actions === 'See Budget for all Departments') {
+                allBudgets();
             } else {
                 console.log('Goodbye')
             }
@@ -221,7 +223,12 @@ async function ViewEmployee() {
 }
 async function ViewRoles() {
     const roles = await asyncQuery(`SELECT * FROM employee_db.roles;`)
-    //const rolesArray = roles.map((role) => role.employeeTitle)
     console.table('\n', roles)
     init();
 }
+ async function allBudgets() {
+     let totalBudgets = 0
+     totalBudgets = await asyncQuery(`SELECT SUM (salary) AS totalBudgets FROM employee_db.roles;`)
+    console.table('\n', totalBudgets)
+    init();
+   }
