@@ -39,6 +39,10 @@
   ## How to use this project 
 
   Open up the intergrated terminal and type in "node index" to start the program. Multiple prompts will be presented to you and select which action you'd like to preform.  
+  
+  ## Short Video Showing how the project works
+  
+  https://drive.google.com/file/d/1a0D6IUWfTmsV0vkhbm2DlLKUOZy_9YAm/view
 
   ## Contributing to this project
   Fork the repo and submit a merge request. Merging will be approved upon review.  
